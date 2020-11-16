@@ -7,7 +7,6 @@ import java.util.Date
 import io.searchbox.client.config.HttpClientConfig
 import io.searchbox.client.{JestClient, JestClientFactory}
 import io.searchbox.core.{Bulk, BulkResult, Index, Search, SearchResult}
-import org.elasticsearch.action.search.MultiSearchResponse.Item
 import org.elasticsearch.index.query.{BoolQueryBuilder, MatchQueryBuilder, RangeQueryBuilder}
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.highlight.HighlightBuilder
