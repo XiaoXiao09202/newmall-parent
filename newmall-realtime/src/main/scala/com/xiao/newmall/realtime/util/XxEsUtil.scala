@@ -6,7 +6,7 @@ import java.util.Date
 
 import io.searchbox.client.config.HttpClientConfig
 import io.searchbox.client.{JestClient, JestClientFactory}
-import io.searchbox.core.{Index, Search, SearchResult}
+import io.searchbox.core.{Bulk, BulkResult, Index, Search, SearchResult}
 import org.elasticsearch.action.search.MultiSearchResponse.Item
 import org.elasticsearch.index.query.{BoolQueryBuilder, MatchQueryBuilder, RangeQueryBuilder}
 import org.elasticsearch.search.builder.SearchSourceBuilder
@@ -35,7 +35,7 @@ object XxEsUtil {
 
 
 
-  def putIndex(args: Array[String]): Unit = {
+  def addDoc(): Unit = {
 
     val jest: JestClient = getClient
     val actorList=new util.ArrayList[String]()
@@ -48,6 +48,25 @@ object XxEsUtil {
     jest.execute(index)
     jest.close()
 
+  }
+
+  def bulkDoc(sourceList:List[(String,Any)],indexName:String):Unit={
+    if(sourceList != null && sourceList.size>0){
+      val jest: JestClient = getClient
+      val bulkbuilder = new Bulk.Builder
+
+      for ((id,source) <- sourceList) {
+        val index: Index = new Index.Builder(source).index(indexName).`type`("_doc").id(id).build()
+        bulkbuilder.addAction(index)
+      }
+      val bulk: Bulk = bulkbuilder.build()
+
+      val result: BulkResult = jest.execute(bulk)
+      val items: util.List[BulkResult#BulkResultItem] = result.getItems
+      println(s"保存到ES：${items.size()} 条")
+
+      jest.close()
+    }
   }
 
   //把结构封装的Map 必须使用Java的 不能使用Scala的
@@ -90,7 +109,7 @@ object XxEsUtil {
   }
 
   def main(args: Array[String]): Unit = {
-    //putIndex(args)
+    //addDoc()
 
     queryMovie
   }
