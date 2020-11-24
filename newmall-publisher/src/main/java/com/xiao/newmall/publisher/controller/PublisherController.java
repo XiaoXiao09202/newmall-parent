@@ -2,11 +2,13 @@ package com.xiao.newmall.publisher.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.xiao.newmall.publisher.service.ClickHouseService;
 import com.xiao.newmall.publisher.service.EsService;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -24,6 +26,9 @@ public class PublisherController {
     @Autowired
     EsService esService;
 
+    @Autowired
+    ClickHouseService clickHouseService;
+
     @RequestMapping(value = "realtime-total",method = RequestMethod.GET)
     public String realtimeTotal(@RequestParam("date") String dt){
 
@@ -39,8 +44,15 @@ public class PublisherController {
         Map<String, Object> newMidMap = new HashMap<>();
         newMidMap.put("id", "new_mid");
         newMidMap.put("name", "新增设备");
-        newMidMap.put("value",233);
+        newMidMap.put("value",234);
         rslist.add(newMidMap);
+
+        Map<String, Object> orderAmountMap = new HashMap<>();
+        orderAmountMap.put("id", "order_amount");
+        orderAmountMap.put("name", "新增交易额");
+        BigDecimal orderAmount = clickHouseService.getOrderAmount(dt);
+        orderAmountMap.put("value",orderAmount);
+        rslist.add(orderAmountMap);
 
         return JSON.toJSONString(rslist);
 
@@ -50,15 +62,35 @@ public class PublisherController {
     @GetMapping("realtime-hour")
     public String realtimeHour(@RequestParam("id") String id,@RequestParam("date") String dt){
 
-        Map dauHourMapTD = esService.getDauHour(dt);
-        String yd = getYd(dt);
-        Map dauHourMapYD = esService.getDauHour(yd);
+        if("dau".equals(id)){
 
-        Map<String,Map<String,Long>> rsMap = new HashMap<>();
-        rsMap.put("yesterday", dauHourMapYD);
-        rsMap.put("today", dauHourMapTD);
+            Map dauHourMapTD = esService.getDauHour(dt);
+            String yd = getYd(dt);
+            Map dauHourMapYD = esService.getDauHour(yd);
 
-        return JSON.toJSONString(rsMap);
+            Map<String,Map<String,Long>> rsMap = new HashMap<>();
+            rsMap.put("yesterday", dauHourMapYD);
+            rsMap.put("today", dauHourMapTD);
+
+            return JSON.toJSONString(rsMap);
+
+        }else if("order_amount".equals(id)){
+
+            Map orderAmoutHourTD = clickHouseService.getOrderAmoutHour(dt);
+            String yd = getYd(dt);
+            Map orderAmoutHourYD = clickHouseService.getOrderAmoutHour(yd);
+
+            Map<String,Map<String,Long>> rsMap = new HashMap<>();
+            rsMap.put("yesterday", orderAmoutHourTD);
+            rsMap.put("today", orderAmoutHourYD);
+
+            return JSON.toJSONString(rsMap);
+
+        }else{
+
+            return null;
+
+        }
     }
 
     private String getYd(String today){

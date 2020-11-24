@@ -9,7 +9,5 @@ case class DauInfo(
                     var dt:String,
                     var hr:String,
                     var mi:String,
-                    ts:Long) {
-
-}
+                    ts:Long)
 

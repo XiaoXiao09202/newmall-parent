@@ -1,0 +1,30 @@
+创建专用保存数据结果的数据库
+create database newmall_rs
+
+用于保存偏移量
+CREATE TABLE `offsets` (
+  `group_id` varchar(200) NOT NULL,
+  `topic` varchar(200) NOT NULL,
+  `partition_id` int(11) NOT NULL,
+  `topic_offset` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`group_id`,`topic`,`partition_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+用户保存商品聚合结果
+CREATE TABLE `spu_order_final_detail_amount_stat` (
+stat_time datetime  ,
+spu_id varchar(20) ,
+spu_name  varchar(200),
+amount decimal(16,2) ,
+PRIMARY KEY (`stat_time`,`spu_id`,`spu_name`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8
+
+用户保存品牌聚合结果
+CREATE TABLE `trademark_amount_stat` (
+stat_time datetime  ,
+trademark_id varchar(20) ,
+trademark_name  varchar(200),
+amount decimal(16,2) ,
+PRIMARY KEY (`stat_time`,`trademark_id`,`trademark_name`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8

@@ -29,7 +29,7 @@ object DauApp {
     if(kafkaOffsetMap != null && kafkaOffsetMap.size>0){
       recordInputStream = XxKafkaUtil.getKafkaStream(topic,ssc,kafkaOffsetMap,groupId)
     }else{
-      recordInputStream = XxKafkaUtil.getKafkaStream(topic, ssc)
+      recordInputStream = XxKafkaUtil.getKafkaStream(topic,ssc,groupId)
     }
 
     //得到本批次的偏移量的结束位置，用于更新redis中的偏移量

@@ -20,7 +20,7 @@ object BaseDbMaxWell {
     if(kafkaOffsetMap != null && kafkaOffsetMap.size>0){
       recordInputStream = XxKafkaUtil.getKafkaStream(topic,ssc,kafkaOffsetMap,groupId)
     }else{
-      recordInputStream = XxKafkaUtil.getKafkaStream(topic, ssc)
+      recordInputStream = XxKafkaUtil.getKafkaStream(topic,ssc,groupId)
     }
 
     //得到本批次的偏移量的结束位置，用于更新redis中的偏移量
@@ -40,12 +40,27 @@ object BaseDbMaxWell {
 
       //推回Kafka
       rdd.foreach(jsonObj=>{
-        val data: String = jsonObj.getString("data")
-        val tableName: String = jsonObj.getString("table")
-        val topic = s"ODS_${tableName.toUpperCase}"
+        if(jsonObj.getJSONObject("data") !=null && !jsonObj.getJSONObject("data").isEmpty
+        && !"delete".equals(jsonObj.getString("type"))
+          //测试双流join 只保留订单 和订单明细数据
+          && ("insert".equals(jsonObj.getString("type")) && "order_info".equals(jsonObj.getString("table"))
+          || "order_detail".equals(jsonObj.getString("table"))
+          //维度数据测试
+          ||"base_province".equals(jsonObj.getString("table"))
+          ||"user_info".equals(jsonObj.getString("table"))
+          ||"base_category3".equals(jsonObj.getString("table"))
+          ||"base_trademark".equals(jsonObj.getString("table"))
+          ||"spu_info".equals(jsonObj.getString("table"))
+          ||"sku_info".equals(jsonObj.getString("table"))
+          )
+        ){
+          val data: String = jsonObj.getString("data")
+          val tableName: String = jsonObj.getString("table")
+          val topic = s"ODS_${tableName.toUpperCase}"
           println(data)
+          //Thread.sleep(500) //测试双流join时打开
           XxKafkaSink.send(topic,data)     //非幂等的操作，可能会导致数据重复
-
+        }
       })
 
       //偏移量提交
